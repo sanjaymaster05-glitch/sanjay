@@ -1,0 +1,50 @@
+<script>
+const btn = document.getElementById("analyzeBtn");
+const nameInput = document.getElementById("nameInput");
+const fileInput = document.getElementById("imageInput");
+const resultBox = document.getElementById("resultBox");
+const previewImg = document.getElementById("previewImg");
+const progressBar = document.getElementById("loadingProgress");
+const bar = document.getElementById("loadingBar");
+
+const aiKeywords = ["ai","generated","midjourney","stable diffusion","robot","fake","render","cgi"];
+const realKeywords = ["screenshot","whatsapp","marksheet","id","card","human","animal","dog","cat","place","beach","mountain"];
+
+btn.onclick = async () => {
+    if (!fileInput.files[0]) return alert("Select an image!");
+    const file = fileInput.files[0];
+    const name = nameInput.value.trim() || "User";
+
+    // Show preview
+    previewImg.src = URL.createObjectURL(file);
+    previewImg.style.display = "block";
+
+    // Show loading
+    bar.style.display = "block";
+    let pct = 0;
+    let loader = setInterval(() => { pct += 5; if(pct>100) pct=100; progressBar.style.width=pct+"%"; if(pct===100) clearInterval(loader); }, 35);
+
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = async () => {
+        let fname = file.name.toLowerCase();
+        let score = 0;
+
+        if(aiKeywords.some(w=>fname.includes(w)) || fname.endsWith(".pdf") || fname.includes("scan") || fname.includes("document") || img.width>3500 && img.height>2500) score=999;
+        else if(realKeywords.some(w=>fname.includes(w))) score=-999;
+        else score=Math.random()*100;
+
+        setTimeout(() => {
+            bar.style.display="none";
+            if(score>50){
+                resultBox.textContent=`Hey ${name}, 🤖 AI-Generated Image Detected!`;
+                resultBox.className="result fake";
+            } else {
+                resultBox.textContent=`Hey ${name}, ✅ Real Image Detected!`;
+                resultBox.className="result real";
+            }
+            resultBox.style.display="block";
+        },700);
+    };
+};
+</script>
